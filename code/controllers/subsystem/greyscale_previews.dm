@@ -60,7 +60,7 @@ SUBSYSTEM_DEF(greyscale_previews)
 /datum/controller/subsystem/greyscale_previews/proc/check_map_previews_filepath_order(list/our_list)
 	var/list/type_paths_to_check = list()
 	for(var/filepath in our_list)
-		type_paths_to_check += our_list[filepath]
+		type_paths_to_check += our_list[filepath] //fuck
 
 	if(!length(type_paths_to_check))
 		return TRUE
