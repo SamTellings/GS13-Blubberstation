@@ -63,3 +63,10 @@ export const see_bursting: FeatureToggle = {
   description: 'Toggle if you want to see people bursting by inflation.',
   component: CheckboxInput,
 };
+
+export const transformation: FeatureToggle = {
+  name: 'Transformation',
+  description:
+    'Toggle if you want to be able to transform into cattle and other things.',
+  component: CheckboxInput,
+};
