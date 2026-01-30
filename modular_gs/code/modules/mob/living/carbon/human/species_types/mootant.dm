@@ -1,7 +1,20 @@
-/mob/living/carbon/human/species/mammal/mootant
-	race = /datum/species/mammal/mootant
+#define MUT_MSG_IMMEDIATE 1
+#define MUT_MSG_EXTENDED 2
+#define MUT_MSG_ABOUT2TURN 3
 
-/datum/species/mammal/mootant //WIP species
+/// the current_cycle threshold / iterations needed before one can transform
+#define CYCLES_TO_TURN 20
+/// the cycle at which 'immediate' mutation text begins displaying
+#define CYCLES_MSG_IMMEDIATE 6
+/// the cycle at which 'extended' mutation text begins displaying
+#define CYCLES_MSG_EXTENDED 16
+
+#define COWCOLOUR "#FFFFFF"
+
+/mob/living/carbon/human/species/mammal/mootant
+	race = /datum/species/mootant
+
+/datum/species/mootant //WIP species
 	name = "Mootant"
 	id = SPECIES_MOOTANT
 	inherent_traits = list(
@@ -13,29 +26,56 @@
 		TRAIT_HEAT
 	)
 	inherent_biotypes = MOB_ORGANIC|MOB_HUMANOID|MOB_BEAST
-	mutant_bodyparts = list("mcolor" = "FFFFFF","mcolor2" = "FFFFFF","mcolor3" = "FFFFFF", "mam_snouts" = "Mootant ALT (Tertiary)", "mam_tail" = "Mootant", "mam_ears" = "Mootant ALT (Tertiary)", "deco_wings" = "None",
-							"mam_body_markings" = list(), "taur" = "None", "horns" = "None", "legs" = "Plantigrade", "meat_type" = "Mammalian")
+	mutant_bodyparts = list()
+	mutanttongue = /obj/item/organ/tongue/mootant
+	mutanteyes = /obj/item/organ/eyes
 	meat = /obj/item/food/meat/slab/human
-	/* So species are a bit different now it seems...
+	changesource_flags = MIRROR_BADMIN | WABBAJACK
+	examine_limb_id = SPECIES_MAMMAL
+	bodypart_overrides = list(
+	BODY_ZONE_HEAD = /obj/item/bodypart/head/mutant,
+	BODY_ZONE_CHEST = /obj/item/bodypart/chest/mutant,
+	BODY_ZONE_L_ARM = /obj/item/bodypart/arm/left/mutant,
+	BODY_ZONE_R_ARM = /obj/item/bodypart/arm/right/mutant,
+	BODY_ZONE_L_LEG = /obj/item/bodypart/leg/left/mutant,
+	BODY_ZONE_R_LEG = /obj/item/bodypart/leg/right/mutant,
+	)
+
+	/* So species are a bit different now it seems... LEaving it here as a ref
 	species_traits = list(MUTCOLORS,EYECOLOR,LIPS,HAIR,HORNCOLOR,WINGCOLOR,HAS_FLESH,HAS_BONE)
 	inherent_traits = list(TRAIT_CHUNKYFINGERS, TRAIT_VORACIOUS, TRAIT_LIPOLICIDE_TOLERANCE, TRAIT_PACIFISM, TRAIT_MILKY, TRAIT_HEAT) //chunky fingers because hooves!
 	inherent_biotypes = MOB_ORGANIC|MOB_HUMANOID|MOB_BEAST
 	mutant_bodyparts = list("mcolor" = "FFFFFF","mcolor2" = "FFFFFF","mcolor3" = "FFFFFF", "mam_snouts" = "Mootant ALT (Tertiary)", "mam_tail" = "Mootant", "mam_ears" = "Mootant ALT (Tertiary)", "deco_wings" = "None",
 							"mam_body_markings" = list(), "taur" = "None", "horns" = "None", "legs" = "Plantigrade", "meat_type" = "Mammalian")
-	attack_verb = "claw"
-	attack_sound = 'sound/weapons/slash.ogg'
-	miss_sound = 'sound/weapons/slashmiss.ogg'
+	--attack_verb = "claw"
+	--attack_sound = 'sound/weapons/slash.ogg'
+	--miss_sound = 'sound/weapons/slashmiss.ogg'
 	meat = /obj/item/food/meat/slab/human/mutant/mammal
 	// mutant_organs = list(/obj/item/organ/genital/breasts) //moo
-	liked_food = FRIED | DAIRY
-	disliked_food = TOXIC | MEAT
+	--liked_food = FRIED | DAIRY
+	--disliked_food = TOXIC | MEAT
 
-	tail_type = "mam_tail"
-	wagging_type = "mam_waggingtail"
-	species_category = SPECIES_CATEGORY_FURRY
+	--tail_type = "mam_tail"
+	--wagging_type = "mam_waggingtail"
+	--species_category = SPECIES_CATEGORY_FURRY
 
 	allowed_limb_ids = list("mammal","aquatic","avian")*/
 
+/obj/item/organ/tongue/mootant
+	liked_foodtypes = FRIED | DAIRY
+	disliked_foodtypes = MEAT
+	toxic_foodtypes = TOXIC
+
+/datum/species/mootant/get_default_mutant_bodyparts()
+	return list(
+		"tail" = list("Mootant", TRUE),
+		"snout" = list("Mootant", TRUE),
+		"ears" = list("Mootant", TRUE),
+		"legs" = list("Digitigrade Legs", FALSE),
+		"mcolor" = COWCOLOUR,
+		"mcolor2" = COWCOLOUR,
+		"mcolor3" = COWCOLOUR,
+	)
 
 //mootant body parts
 //maws
@@ -71,8 +111,10 @@
 	name = "Mootant Mutation Toxin"
 	description = "A milk-colored toxin."
 	color = "#ffffff"
-	race = /datum/species/mammal/mootant
-	mutationtexts = list( "I want to be a good cow..." = MUT_MSG_IMMEDIATE)
+	race = /datum/species/mootant
+	mutationtexts = list( "You feel yourself to become more placid!" = MUT_MSG_IMMEDIATE,
+							"I want to be a good cow..." = MUT_MSG_EXTENDED,
+							"Mooo!" = MUT_MSG_ABOUT2TURN)
 	var/produced_chem = /datum/reagent/consumable/milk
 
 /obj/item/reagent_containers/cup/beaker/mutationmootant //preset for toxin
@@ -92,58 +134,66 @@
 		victim.reagents.del_reagent(type)
 		return FALSE
 
-	if(victim.dna.species.type == /datum/species/mammal/mootant)
-		to_chat(victim, span_warning("It seems like [victim] resisted the effects of the mutation toxin."))
+	if(victim.dna.species.type == /datum/species/mootant)
 		victim.reagents.del_reagent(type)
 		return FALSE
 
-	switch(current_cycle)
-		if(1 to 4)
-			if(prob(10))
-				victim.visible_message("<span class='warning'>[victim]'s features start to subtly shift!</span>", "<span class='danger'>You feel yourself to become more placid!</span>")
-		if(5)
-			if(victim.dna.features[FEATURE_SNOUT] == "None" )
+	/*switch(current_cycle)
+		if(2)
+			victim.visible_message("<span class='warning'>[victim]'s features start to subtly shift!</span>", "<span class='danger'>You feel yourself to become more placid!</span>")
+		if(4)
+			if(victim.dna.mutant_bodyparts[FEATURE_SNOUT] == "None" )
 				victim.visible_message("<span class='warning'>[victim]'s nose slowly starts to morph into a cow's snout!</span>", "<span class='danger'>You feel your nose grow and stretch into a snout!</span>")
 			else
 				victim.visible_message("<span class='warning'>[victim]'s snout slowly starts to morph into a cow's snout!</span>", "<span class='danger'>You feel your snout morph and stretch into a short stubby snout!</span>")
-			victim.dna.features[FEATURE_SNOUT] = "Mootant ALT (Tertiary)"
-			victim.update_body()
-		if(6 to 9)
-			if(prob(10))
-				victim.visible_message("<span class='warning'>[victim]'s chest slowly starts undulating!</span>", "<span class='danger'>You feel a warm tingly feeling spread over your chest!</span>")
-		if(10)
+			victim.dna.mutant_bodyparts[FEATURE_SNOUT] = list(MUTANT_INDEX_NAME = "Mootant", MUTANT_INDEX_COLOR_LIST = list(COWCOLOUR, COWCOLOUR, COWCOLOUR))
+			victim.update_body(TRUE)
+		if(6)
+			victim.visible_message("<span class='warning'>[victim]'s chest slowly starts undulating!</span>", "<span class='danger'>You feel a warm tingly feeling spread over your chest!</span>")
+		if(8)
 			victim.visible_message("<span class='warning'>[victim]'s chest slowly starts expanding!</span>", "<span class='danger'>You feel your chest surge out as a feeling of tightness overwhelms you!</span>")
 			victim.try_lewd_autoemote("moan")
 			victim.reagents.add_reagent(/datum/reagent/drug/aphrodisiac/succubus_milk, 19) //instead of adding breasts as a mutant organ, let's just make them grow some
 			playsound(victim.loc, 'modular_gs/sound/effects/inflation/creaking/Creak3.ogg', 45, 1, 1, 1.2, ignore_walls = FALSE)
-		if(11 to 14)
-			if(prob(10))
-				victim.visible_message("<span class='warning'>[victim]'s stomach gurgles loudly!</span>", "<span class='danger'>You feel your thoughts dull as all you can think about is grazing...</span>")
-		if(15)
+		if(10)
+			victim.visible_message("<span class='warning'>[victim]'s stomach gurgles loudly!</span>", "<span class='danger'>You feel your thoughts dull as all you can think about is grazing...</span>")
+		if(12)
 			victim.visible_message("<span class='warning'>[victim]'s body starts rapidly swelling with newfound plush!</span>", "<span class='danger'>You feel yourself getting heavier as your body expands with newfound flab!</span>")
 			victim.try_lewd_autoemote("gurgle")
 			victim.adjust_fatness(400, FATTENING_TYPE_CHEM)
-		if(17)
+		if(14)
 			victim.visible_message("<span class='warning'>[victim]'s breasts start to leak small droplets of milk!</span>", "<span class='danger'>You feel a fullness in your breasts.</span>")
 			victim.dna.features["breasts_lactation"] = TRUE
 			victim.dna.features["breast_produce"] = /datum/reagent/consumable/milk
-			victim.update_body()
-		if(18)
+			victim.updateappearance(victim.updateappearance(TRUE,TRUE,TRUE))
+		if(16)
 			victim.visible_message("<span class='warning'>[victim]'s hands turn into hooves!</span>", "<span class='danger'>You feel your hands change and become less agile</span>")
-		if(20)
+		if(18)
 			victim.visible_message("<span class='warning'>[victim]'s ears turn large and floppy like a cow's!</span>", "<span class='danger'>You feel your ears change, but it doesn't seem to bother you too much...</span>")
-			victim.dna.features[FEATURE_SNOUT] = "Mootant ALT (Tertiary)"
-			victim.update_body()
-		if(21 to 24)
-			if(prob(10))
-				victim.visible_message("<span class='warning'>You see something growing on [victim]'s lower back!</span>", "<span class='danger'>I NEED to be a good cow...</span>")
-		if(25 to INFINITY)
+			victim.dna.mutant_bodyparts[FEATURE_EARS] = list(MUTANT_INDEX_NAME = "Mootant", MUTANT_INDEX_COLOR_LIST = list(COWCOLOUR, COWCOLOUR, COWCOLOUR))
+			victim.updateappearance(victim.updateappearance(TRUE,TRUE,TRUE))
+		if(19)
 			victim.visible_message("<span class='warning'>[victim] sprouts a cow tail!</span>", "<span class='danger'>I just want to graze! I need to get milked! Mooooooo!</span>")
-			victim.dna.features[FEATURE_TAIL] = "Mootant"
+			victim.dna.mutant_bodyparts[FEATURE_TAIL] = list(MUTANT_INDEX_NAME = "Mootant", MUTANT_INDEX_COLOR_LIST = list(COWCOLOUR, COWCOLOUR, COWCOLOUR))
 			victim.try_lewd_autoemote("moo")
-			victim.update_body()
-			var/species_type = /datum/species/mammal/mootant
-			victim.set_species(species_type)
-			victim.reagents.del_reagent(type)
-			to_chat(victim, mutationtexts)
+			victim.updateappearance(victim.updateappearance(TRUE,TRUE,TRUE))*/
+
+	victim.dna.mutant_bodyparts[FEATURE_MOTH_ANTENNAE] = list(MUTANT_INDEX_NAME = "Plain", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF"), MUTANT_INDEX_EMISSIVE_LIST = list(FALSE))
+	victim.dna.mutant_bodyparts[FEATURE_TAIL_GENERIC] = list(MUTANT_INDEX_NAME = "Light Tiger", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF", "#FFFFFF", "#FFFFFF"))
+	victim.dna.mutant_bodyparts[FEATURE_SNOUT] = list(MUTANT_INDEX_NAME = "Sharp + Light", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF", "#FFFFFF", "#FFFFFF"))
+	victim.dna.mutant_bodyparts[FEATURE_HORNS] = list(MUTANT_INDEX_NAME = "Simple", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF", "#FFFFFF", "#FFFFFF"))
+	victim.dna.mutant_bodyparts[FEATURE_FRILLS] = list(MUTANT_INDEX_NAME = "Aquatic", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF", "#FFFFFF", "#FFFFFF"))
+	victim.dna.update_dna_identity()
+	victim.synchronize_bodytypes()
+	victim.synchronize_bodyshapes()
+
 	return
+
+#undef MUT_MSG_IMMEDIATE
+#undef MUT_MSG_EXTENDED
+#undef MUT_MSG_ABOUT2TURN
+
+#undef CYCLES_TO_TURN
+#undef CYCLES_MSG_IMMEDIATE
+#undef CYCLES_MSG_EXTENDED
+#undef COWCOLOUR
