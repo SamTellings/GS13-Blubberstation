@@ -178,14 +178,12 @@
 			victim.try_lewd_autoemote("moo")
 			victim.updateappearance(victim.updateappearance(TRUE,TRUE,TRUE))*/
 
-	victim.dna.mutant_bodyparts[FEATURE_MOTH_ANTENNAE] = list(MUTANT_INDEX_NAME = "Plain", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF"), MUTANT_INDEX_EMISSIVE_LIST = list(FALSE))
-	victim.dna.mutant_bodyparts[FEATURE_TAIL_GENERIC] = list(MUTANT_INDEX_NAME = "Light Tiger", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF", "#FFFFFF", "#FFFFFF"))
-	victim.dna.mutant_bodyparts[FEATURE_SNOUT] = list(MUTANT_INDEX_NAME = "Sharp + Light", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF", "#FFFFFF", "#FFFFFF"))
-	victim.dna.mutant_bodyparts[FEATURE_HORNS] = list(MUTANT_INDEX_NAME = "Simple", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF", "#FFFFFF", "#FFFFFF"))
-	victim.dna.mutant_bodyparts[FEATURE_FRILLS] = list(MUTANT_INDEX_NAME = "Aquatic", MUTANT_INDEX_COLOR_LIST = list("#FFFFFF", "#FFFFFF", "#FFFFFF"))
-	victim.dna.update_dna_identity()
-	victim.synchronize_bodytypes()
-	victim.synchronize_bodyshapes()
+	victim.dna.mutant_bodyparts[FEATURE_TAIL_GENERIC] = list(MUTANT_INDEX_NAME = "Mootant", MUTANT_INDEX_COLOR_LIST = list(COWCOLOUR, COWCOLOUR, COWCOLOUR))
+	victim.dna.mutant_bodyparts[FEATURE_SNOUT] = list(MUTANT_INDEX_NAME = "Mootant", MUTANT_INDEX_COLOR_LIST = list(COWCOLOUR, COWCOLOUR, COWCOLOUR))
+	victim.dna.mutant_bodyparts[FEATURE_EARS] = list(MUTANT_INDEX_NAME = "Mootant", MUTANT_INDEX_COLOR_LIST = list(COWCOLOUR, COWCOLOUR, COWCOLOUR))
+	victim.dna.species.regenerate_organs(victim, victim.dna.species)
+
+	victim.set_species(/datum/species/mootant)
 
 	return
 
